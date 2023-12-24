@@ -14,7 +14,7 @@ import data, ic, solver
 filepath = '../../data/flds.tot.00410'
 # System params:
 n = int(4e5) # number of particles
-N = int(5e3) # number of time steps
+N = int(5e3) # number of time steps, ~5e3 for equilibration
 # Plot params:
 N_bins = 32 # number of histogram bins
 bins = (np.linspace(-1.5, 3.5, N_bins+1), np.linspace(0, np.pi, N_bins+1)) # histogram bins
@@ -48,12 +48,12 @@ if b_mean > 1e1 or b_mean < 1e-1: print(f'WARNING: extreme b_mean')
 
 pos_0, vel_0 = ic.generate_1(n, dx, gs, 1)
 
-plt.rcParams['font.family'] = 'CMU'
+plt.rcParams['font.family'] = 'CMU' # latex font, ok if error
 plt.rcParams['text.usetex'] = True
 plt.rcParams['figure.figsize'] = (9, 8)
 cmap = get_cmap('inferno')
 
-# Integration and plotting the Maxwell–Juttner typa spectra.
+# Integration and plotting.
 e = [d['ex'], d['ey'], d['ez']]
 b = [d['bx'], d['by'], d['bz']]
 m = -n//(-n_threads)
@@ -81,7 +81,7 @@ for k, (gamma_syn, gamma_ic) in enumerate(zip(gammas_syn, gammas_ic)):
   norm_alpha = np.sum(hist, axis=1)
   good = np.where(norm_alpha)
   hist_alpha = np.sum(hist*bin_centers_alpha, axis=1)[good]/norm_alpha[good]
-  # Plotting 2D histogram.
+  # Plotting 2D histograms.
   if gamma_syn == np.inf: gamma_syn = '\infty'
   if gamma_ic == np.inf: gamma_ic = '\infty'
   plt.figure(1)
@@ -92,14 +92,13 @@ for k, (gamma_syn, gamma_ic) in enumerate(zip(gammas_syn, gammas_ic)):
   plt.xlabel('$\ln(\gamma-1)$'); plt.ylabel('$\\alpha$')
   plt.yticks([0, np.pi/2, np.pi], ['0', '$\\pi/2$', '$\\pi$'])
   plt.title(f'$\gamma_\\mathrm{{syn}}={gamma_syn}$ $\gamma_\\mathrm{{iC}}={gamma_ic}$' if gamma_syn != '\infty' or gamma_ic != '\infty' else 'no radiative cooling')
-  # Plotting 1D histogram.
+  # Plotting 1D histograms.
   plt.figure(2)
   plt.subplot(-len(gammas_syn)//(-2), 2, k+1)
-  plt.xscale('log')
-  plt.plot(np.exp(bin_centers_gamma[good]), hist_alpha, c='black')
+  plt.plot(bin_centers_gamma[good], hist_alpha, c='black')
   plt.xlabel('$\ln(\gamma-1)$'); plt.ylabel('$\\alpha$')
   plt.yticks([0, np.pi/2, np.pi], ['0', '$\\pi/2$', '$\\pi$'])
-  plt.xlim(np.exp(bin_centers_gamma[good][0]), np.exp(bin_centers_gamma[good][-1]))
+  plt.xlim(bin_centers_gamma[good][0], bin_centers_gamma[good][-1])
   plt.title(f'$\gamma_\\mathrm{{syn}}={gamma_syn}$ $\gamma_\\mathrm{{iC}}={gamma_ic}$' if gamma_syn != '\infty' or gamma_ic != '\infty' else 'no radiative cooling')
 plt.figure(1)
 plt.tight_layout()

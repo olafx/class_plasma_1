@@ -13,7 +13,7 @@ import data, ic, solver
 filepath = '../../data/flds.tot.00410'
 # System params:
 n = int(1e5) # number of particles
-N = int(1e3) # number of time steps
+N = int(1e3) # number of time steps, ~5e3 for equilibration
 # Plot params:
 N_plot = 64 # number of time steps to plot
 N_bins = 96 # number of histogram bins
@@ -47,7 +47,7 @@ if b_mean > 1e1 or b_mean < 1e-1: print(f'WARNING: extreme b_mean')
 
 pos_0, vel_0 = ic.generate_1(n, dx, gs, 1)
 
-plt.rcParams['font.family'] = 'CMU'
+plt.rcParams['font.family'] = 'CMU' # latex font, ok if error
 plt.rcParams['text.usetex'] = True
 plt.rcParams['figure.figsize'] = (9, 6)
 cmap = get_cmap('inferno')
