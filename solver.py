@@ -34,32 +34,34 @@ def step(pos, vel, e, b, cc, B_norm, dx, gs, beta_rec, gamma_syn, gamma_ic, cool
   vel[1] = (vel[1]+vel_B[2]*b[0]-vel_B[0]*b[2]+e[1])/cc
   vel[2] = (vel[2]+vel_B[0]*b[1]-vel_B[1]*b[0]+e[2])/cc
   # Apply synchrotron radiation, using the velocity estimate from Boris mover.
-  vel_mid = (vel+vel_0)/2
-  gamma = np.sqrt(1+vel_mid[0]**2+vel_mid[1]**2+vel_mid[2]**2)
-  e_bar = np.array([
-    e_0[0]+(vel_mid[1]*b_0[2]-vel_mid[2]*b_0[1])/gamma,
-    e_0[1]+(vel_mid[2]*b_0[0]-vel_mid[0]*b_0[2])/gamma,
-    e_0[2]+(vel_mid[0]*b_0[1]-vel_mid[1]*b_0[0])/gamma])
-  e_bar_sq = e_bar[0]**2+e_bar[1]**2+e_bar[2]**2
-  beta_dot_e = (e[0]*vel_mid[0]+e[1]*vel_mid[1]+e[2]*vel_mid[2])/gamma
-  chi_R_sq = np.abs(e_bar_sq-beta_dot_e**2)
-  kappa_R = np.array([
-    (b_0[2]*e_bar[1]-b_0[1]*e_bar[2])+(e_0[0]*beta_dot_e),
-    (-b_0[2]*e_bar[0]+b_0[0]*e_bar[2])+(e_0[1]*beta_dot_e),
-    (b_0[1]*e_bar[0]-b_0[0]*e_bar[1])+(e_0[2]*beta_dot_e)])
-  c2 = B_norm*beta_rec/cc/gamma_syn**2
-  if (c2*chi_R_sq*gamma > cool_lim).any():
-    print(f'WARNING: synchrotron cooling limit exceeded, {np.max(c2*chi_R_sq*gamma):.2e} > {cool_lim:.2e}')
-    c2 = cool_lim/(chi_R_sq*gamma)
-  vel += c2*(kappa_R-chi_R_sq*gamma*vel_mid)
+  if gamma_syn < np.inf:
+    vel_mid = (vel+vel_0)/2
+    gamma = np.sqrt(1+vel_mid[0]**2+vel_mid[1]**2+vel_mid[2]**2)
+    e_bar = np.array([
+      e_0[0]+(vel_mid[1]*b_0[2]-vel_mid[2]*b_0[1])/gamma,
+      e_0[1]+(vel_mid[2]*b_0[0]-vel_mid[0]*b_0[2])/gamma,
+      e_0[2]+(vel_mid[0]*b_0[1]-vel_mid[1]*b_0[0])/gamma])
+    e_bar_sq = e_bar[0]**2+e_bar[1]**2+e_bar[2]**2
+    beta_dot_e = (e[0]*vel_mid[0]+e[1]*vel_mid[1]+e[2]*vel_mid[2])/gamma
+    chi_R_sq = np.abs(e_bar_sq-beta_dot_e**2)
+    kappa_R = np.array([
+      (b_0[2]*e_bar[1]-b_0[1]*e_bar[2])+(e_0[0]*beta_dot_e),
+      (-b_0[2]*e_bar[0]+b_0[0]*e_bar[2])+(e_0[1]*beta_dot_e),
+      (b_0[1]*e_bar[0]-b_0[0]*e_bar[1])+(e_0[2]*beta_dot_e)])
+    c2 = B_norm*beta_rec/cc/gamma_syn**2
+    if (c2*chi_R_sq*gamma > cool_lim).any():
+      print(f'WARNING: synchrotron cooling limit exceeded, {np.max(c2*chi_R_sq*gamma):.2e} > {cool_lim:.2e}')
+      c2 = cool_lim/(chi_R_sq*gamma)
+    vel += c2*(kappa_R-chi_R_sq*gamma*vel_mid)
   # Apply inverse Compton radiation, using the newest velocity.
-  vel_mid = (vel+vel_0)/2
-  gamma = np.sqrt(1+vel_mid[0]**2+vel_mid[1]**2+vel_mid[2]**2)
-  c3 = B_norm*beta_rec/cc/gamma_ic**2
-  if (c3*gamma > cool_lim).any():
-    print(f'WARNING: inverse Compton cooling limit exceeded, {np.max(c3*gamma):.2e} > {cool_lim:.2e}')
-    c3 = cool_lim/gamma
-  vel -= c3*gamma*vel_mid
+  if gamma_ic < np.inf:
+    vel_mid = (vel+vel_0)/2
+    gamma = np.sqrt(1+vel_mid[0]**2+vel_mid[1]**2+vel_mid[2]**2)
+    c3 = B_norm*beta_rec/cc/gamma_ic**2
+    if (c3*gamma > cool_lim).any():
+      print(f'WARNING: inverse Compton cooling limit exceeded, {np.max(c3*gamma):.2e} > {cool_lim:.2e}')
+      c3 = cool_lim/gamma
+    vel -= c3*gamma*vel_mid
   # Update positions.
   pos += vel*cc
   # Enforce boundary conditions.

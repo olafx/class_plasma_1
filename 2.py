@@ -13,10 +13,10 @@ import data, ic, solver
 filepath = '../../data/flds.tot.00410'
 # System params:
 n = int(1e5) # number of particles
-N = int(4e2) # number of time steps
+N = int(5e3) # number of time steps
 # Plot params:
 N_plot = 48 # number of time steps to plot
-N_bins = 32 # number of histogram bins
+N_bins = 256 # number of histogram bins
 # Tristan-v2 numerical params:
 cc = .2 # CFL condition: cc <= 1
 c_omp = 10
@@ -45,9 +45,12 @@ if e_mean > 1e1 or e_mean < 1e-1: print(f'WARNING: extreme e_mean')
 print(f'{b_mean=:.2e}')
 if b_mean > 1e1 or b_mean < 1e-1: print(f'WARNING: extreme b_mean')
 
-# pos_i, vel, sampling_eff = ic.generate_2(d['dens1'], 1, n)
-# print(f'{sampling_eff*100=:.2f}%')
 pos, vel = ic.generate_1(n, dx, gs, 1)
+
+plt.rcParams['font.family'] = 'CMU'
+plt.rcParams['text.usetex'] = True
+plt.rcParams['figure.figsize'] = (5, 3)
+cmap = get_cmap('inferno')
 
 # Integration and plotting the Maxwell–Juttner typa spectra.
 e = [d['ex'], d['ey'], d['ez']]
@@ -56,7 +59,6 @@ params_basic = (cc, B_norm, dx, gs)
 params_cool = (beta_rec, gamma_syn, gamma_ic, cool_lim)
 plt.figure(1)
 plt.xscale('log'); plt.yscale('log')
-cmap = get_cmap('inferno')
 for i in range(N):
   print(f'{i+1:{len(str(N))}}/{N}')
   m = -n//(-n_threads)
@@ -67,11 +69,16 @@ for i in range(N):
   for thread in threads: thread.join()
   if i % (N//N_plot) == 0:
     gamma = np.sqrt(1+vel[0]**2+vel[1]**2+vel[2]**2)
-    hist, bin_edges = np.histogram(gamma-1, density=True, bins=N_bins)
+    hist, bin_edges = np.histogram(np.log(gamma-1), density=True, bins=N_bins)
     bin_centers = (bin_edges[:-1]+bin_edges[1:])/2
-    plt.plot(bin_centers, bin_centers*hist, color=cmap(i/N))
+    plt.plot(np.exp(bin_centers), np.exp(bin_centers)*hist, color=cmap(i/N))
 (scalar_mappable := ScalarMappable(cmap=cmap, norm=Normalize(0, (N-1)*dt*cc/(dx*gs)))).set_array([])
-cbar = plt.colorbar(scalar_mappable, label='tc/L')
-plt.xlabel('gamma-1'); plt.ylabel('n*(gamma-1)')
+cbar = plt.colorbar(scalar_mappable, label='$tc/L$')
+plt.xlim(5e-3, 1e2); plt.ylim(1e-5, 2e1)
+plt.xlabel('$\gamma-1$'); plt.ylabel('$n(\gamma-1)$')
+if gamma_syn == np.inf: gamma_syn = '\infty'
+if gamma_ic == np.inf: gamma_ic = '\infty'
+plt.title(f'$\gamma_\\mathrm{{syn}}={gamma_syn}$ $\gamma_\\mathrm{{iC}}={gamma_ic}$' if gamma_syn != '\infty' or gamma_ic != '\infty' else 'no radiative cooling')
 plt.tight_layout()
+plt.savefig('2.pdf', bbox_inches='tight')
 plt.show()
