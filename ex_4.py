@@ -82,7 +82,7 @@ for k, (gamma_syn, gamma_ic) in enumerate(zip(gammas_syn, gammas_ic)):
       map_coordinates(e[1], pos/dx, order=1, mode='grid-wrap'),
       map_coordinates(e[2], pos/dx, order=1, mode='grid-wrap')])*B_norm
     e_par = np.sum(e_int*b_int, axis=0)/np.sum(b_int*b_int, axis=0)*b_int
-    e_per = e_int - e_par
+    e_per = e_int-e_par
     P_par[i] = -np.sum(vel*e_par, axis=0)
     P_per[i] = -np.sum(vel*e_per, axis=0)
     ener_par[i] = (ener_par[i-1] if i > 0 else 0)+P_par[i]*dt
@@ -95,41 +95,18 @@ for k, (gamma_syn, gamma_ic) in enumerate(zip(gammas_syn, gammas_ic)):
     if i % (N//N_plot) == 0:
       gamma = np.sqrt(1+vel[0]**2+vel[1]**2+vel[2]**2)
       hist_P_2D, bin_edges_gamma, bin_edges_P = np.histogram2d(np.log(gamma-1), P_par[i]/P_per[i], density=True, bins=bins)
-      # print('hist_P_2D')
-      # print(hist_P_2D)
-      # print('hist_edges_gamma')
-      # print(bin_edges_gamma)
-      # print('bin_edges_P')
-      # print(bin_edges_P)
       bin_centers_gamma = (bin_edges_gamma[:-1]+bin_edges_gamma[1:])/2
       bin_centers_P = (bin_edges_P[:-1]+bin_edges_P[1:])/2
       norm_P_2D = np.sum(hist_P_2D, axis=1)
-      # print('norm_P_2D')
-      # print(norm_P_2D)
       good = np.where(norm_P_2D)
-      # print('good')
-      # print(good)
       hist_P_1D = np.sum(hist_P_2D*bin_centers_P, axis=1)[good]/norm_P_2D[good]
-      # print('hist_P_1D')
-      # print(hist_P_1D)
-      # plt.figure(1)
-      # extent=(bin_edges_gamma[0], bin_edges_gamma[-1], bin_edges_P[0], bin_edges_P[-1])
-      # plt.imshow(hist_P_2D.T, origin='lower', interpolation='none', cmap=cmap)
-      # (scalar_mappable := ScalarMappable(cmap=cmap, norm=Normalize(0, np.max(hist_P_2D)))).set_array([])
-      # cbar = plt.colorbar(scalar_mappable, label='$n(\\ln(\\gamma-1),P_\\parallel/P_\\perp)$')
-      # plt.show()
-      # exit()
-      # plt.xlabel('$\\ln(\\gamma-1)$'); plt.ylabel('$P_\\parallel/P_\\perp$')
-      # plt.title(f'$\\gamma_\\mathrm{{syn}}={gamma_syn_}$ $\\gamma_\\mathrm{{iC}}={gamma_ic_}$' if gamma_syn_ != '\\infty' or gamma_ic_ != '\\infty' else 'no radiative cooling')
       plt.figure(2)
       plt.subplot(-len(gammas_syn)//(-2), 2, k+1)
-      # plt.xscale('log'); plt.yscale('log')
       plt.plot(bin_centers_gamma[good], hist_P_1D, color=cmap(i/N))
       plt.xlabel('$\\ln(\\gamma-1)$'); plt.ylabel('$P_\\parallel/P_\\perp$')
       plt.title(f'$\\gamma_\\mathrm{{syn}}={gamma_syn_}$ $\\gamma_\\mathrm{{iC}}={gamma_ic_}$' if gamma_syn_ != '\\infty' or gamma_ic_ != '\\infty' else 'no radiative cooling')
   (scalar_mappable := ScalarMappable(cmap=cmap, norm=Normalize(0, (N-1)*dt*cc/(dx*gs)))).set_array([])
   cbar = plt.colorbar(scalar_mappable, label='$tc/L$')
-  # plt.xlim(5e-3, 1e2); plt.ylim(1e-5, 2e1)
 plt.tight_layout()
 plt.savefig('4.pdf', bbox_inches='tight')
 plt.show()
