@@ -52,12 +52,13 @@ plt.rcParams['text.usetex'] = True
 plt.rcParams['figure.figsize'] = (9, 6)
 cmap = get_cmap('inferno')
 
-# Integration and plotting the Maxwell–Juttner typa spectra.
+# Exercise 2.
 e = [d['ex'], d['ey'], d['ez']]
 b = [d['bx'], d['by'], d['bz']]
 m = -n//(-n_threads)
 plt.figure(1)
 for k, (gamma_syn, gamma_ic) in enumerate(zip(gammas_syn, gammas_ic)):
+  # integration
   pos, vel = np.copy(pos_0), np.copy(vel_0)
   params_basic = (cc, B_norm, dx, gs)
   params_cool = (beta_rec, gamma_syn, gamma_ic, cool_lim)
@@ -70,6 +71,7 @@ for k, (gamma_syn, gamma_ic) in enumerate(zip(gammas_syn, gammas_ic)):
       for j in range(n_threads)]
     for thread in threads: thread.start()
     for thread in threads: thread.join()
+    # plotting
     if i % (N//N_plot) == 0:
       gamma = np.sqrt(1+vel[0]**2+vel[1]**2+vel[2]**2)
       hist, bin_edges = np.histogram(np.log(gamma-1), density=True, bins=N_bins)
@@ -78,10 +80,10 @@ for k, (gamma_syn, gamma_ic) in enumerate(zip(gammas_syn, gammas_ic)):
   (scalar_mappable := ScalarMappable(cmap=cmap, norm=Normalize(0, (N-1)*dt*cc/(dx*gs)))).set_array([])
   cbar = plt.colorbar(scalar_mappable, label='$tc/L$')
   plt.xlim(5e-3, 1e2); plt.ylim(1e-5, 2e1)
-  plt.xlabel('$\gamma-1$'); plt.ylabel('$n(\gamma-1)$')
-  if gamma_syn == np.inf: gamma_syn = '\infty'
-  if gamma_ic == np.inf: gamma_ic = '\infty'
-  plt.title(f'$\gamma_\\mathrm{{syn}}={gamma_syn}$ $\gamma_\\mathrm{{iC}}={gamma_ic}$' if gamma_syn != '\infty' or gamma_ic != '\infty' else 'no radiative cooling')
+  plt.xlabel('$\\gamma-1$'); plt.ylabel('$n(\\gamma-1)$')
+  if gamma_syn == np.inf: gamma_syn = '\\infty'
+  if gamma_ic == np.inf: gamma_ic = '\\infty'
+  plt.title(f'$\\gamma_\\mathrm{{syn}}={gamma_syn}$ $\\gamma_\\mathrm{{iC}}={gamma_ic}$' if gamma_syn != '\\infty' or gamma_ic != '\\infty' else 'no radiative cooling')
 plt.tight_layout()
-plt.savefig('3.pdf', bbox_inches='tight')
+plt.savefig('2.pdf', bbox_inches='tight')
 plt.show()

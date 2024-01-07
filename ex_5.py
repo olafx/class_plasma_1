@@ -53,11 +53,12 @@ plt.rcParams['text.usetex'] = True
 plt.rcParams['figure.figsize'] = (9, 8)
 cmap = get_cmap('inferno')
 
-# Integration and plotting.
+# Exercise 5.
 e = [d['ex'], d['ey'], d['ez']]
 b = [d['bx'], d['by'], d['bz']]
 m = -n//(-n_threads)
 for k, (gamma_syn, gamma_ic) in enumerate(zip(gammas_syn, gammas_ic)):
+  # integration
   pos, vel = np.copy(pos_0), np.copy(vel_0)
   params_basic = (cc, B_norm, dx, gs)
   params_cool = (beta_rec, gamma_syn, gamma_ic, cool_lim)
@@ -68,7 +69,7 @@ for k, (gamma_syn, gamma_ic) in enumerate(zip(gammas_syn, gammas_ic)):
       for j in range(n_threads)]
     for thread in threads: thread.start()
     for thread in threads: thread.join()
-  # Calculate histograms, 2D and 2D->1D contracted.
+  # calculate histograms, 2D and 2D->1D contracted
   b_int = np.array([
     map_coordinates(b[0], pos/dx, order=1, mode='grid-wrap'),
     map_coordinates(b[1], pos/dx, order=1, mode='grid-wrap'),
@@ -81,28 +82,28 @@ for k, (gamma_syn, gamma_ic) in enumerate(zip(gammas_syn, gammas_ic)):
   norm_alpha = np.sum(hist, axis=1)
   good = np.where(norm_alpha)
   hist_alpha = np.sum(hist*bin_centers_alpha, axis=1)[good]/norm_alpha[good]
-  # Plotting 2D histograms.
-  if gamma_syn == np.inf: gamma_syn = '\infty'
-  if gamma_ic == np.inf: gamma_ic = '\infty'
+  # plotting 2D histograms
+  if gamma_syn == np.inf: gamma_syn = '\\infty'
+  if gamma_ic == np.inf: gamma_ic = '\\infty'
   plt.figure(1)
   plt.subplot(-len(gammas_syn)//(-2), 2, k+1)
   plt.imshow(hist.T, origin='lower', extent=(bin_edges_gamma[0], bin_edges_gamma[-1], bin_edges_alpha[0], bin_edges_alpha[-1]), interpolation='none', cmap=cmap)
   (scalar_mappable := ScalarMappable(cmap=cmap, norm=Normalize(0, np.max(hist)))).set_array([])
-  cbar = plt.colorbar(scalar_mappable, label='$n(\ln(\gamma-1),\\alpha)$')
-  plt.xlabel('$\ln(\gamma-1)$'); plt.ylabel('$\\alpha$')
+  cbar = plt.colorbar(scalar_mappable, label='$n(\\ln(\\gamma-1),\\alpha)$')
+  plt.xlabel('$\\ln(\\gamma-1)$'); plt.ylabel('$\\alpha$')
   plt.yticks([0, np.pi/2, np.pi], ['0', '$\\pi/2$', '$\\pi$'])
-  plt.title(f'$\gamma_\\mathrm{{syn}}={gamma_syn}$ $\gamma_\\mathrm{{iC}}={gamma_ic}$' if gamma_syn != '\infty' or gamma_ic != '\infty' else 'no radiative cooling')
-  # Plotting 1D histograms.
+  plt.title(f'$\\gamma_\\mathrm{{syn}}={gamma_syn}$ $\\gamma_\\mathrm{{iC}}={gamma_ic}$' if gamma_syn != '\\infty' or gamma_ic != '\\infty' else 'no radiative cooling')
+  # plotting 1D histograms
   plt.figure(2)
   plt.subplot(-len(gammas_syn)//(-2), 2, k+1)
   plt.plot(bin_centers_gamma[good], hist_alpha, c='black')
-  plt.xlabel('$\ln(\gamma-1)$'); plt.ylabel('$\\alpha$')
+  plt.xlabel('$\\ln(\\gamma-1)$'); plt.ylabel('$\\alpha$')
   plt.yticks([0, np.pi/2, np.pi], ['0', '$\\pi/2$', '$\\pi$'])
   plt.xlim(bin_centers_gamma[good][0], bin_centers_gamma[good][-1])
-  plt.title(f'$\gamma_\\mathrm{{syn}}={gamma_syn}$ $\gamma_\\mathrm{{iC}}={gamma_ic}$' if gamma_syn != '\infty' or gamma_ic != '\infty' else 'no radiative cooling')
+  plt.title(f'$\\gamma_\\mathrm{{syn}}={gamma_syn}$ $\\gamma_\\mathrm{{iC}}={gamma_ic}$' if gamma_syn != '\\infty' or gamma_ic != '\\infty' else 'no radiative cooling')
 plt.figure(1)
 plt.tight_layout()
-plt.savefig('4_1.pdf', bbox_inches='tight')
+plt.savefig('5_1.pdf', bbox_inches='tight')
 plt.figure(2)
 plt.tight_layout()
-plt.savefig('4_2.pdf', bbox_inches='tight')
+plt.savefig('5_2.pdf', bbox_inches='tight')
