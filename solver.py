@@ -63,7 +63,9 @@ def step(pos, vel, e, b, cc, B_norm, dx, gs, beta_rec, gamma_syn, gamma_ic, cool
       c3 = cool_lim/gamma
     vel -= c3*gamma*vel_mid
   # Update positions.
-  pos += vel*cc
+  gamma = np.sqrt(1+vel[0]**2+vel[1]**2+vel[2]**2)
+  pos += vel/gamma*cc
+  # pos += vel*cc
   # Enforce boundary conditions.
   for i in range(3):
     pos[i,np.where(pos[i] < 0)] += dx*gs
