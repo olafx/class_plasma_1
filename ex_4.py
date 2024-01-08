@@ -14,7 +14,7 @@ import data, ic, solver
 filepath = '../../data/flds.tot.00410'
 # System params:
 n = int(4e5) # number of particles
-N = int(2e3) # number of time steps, ~5e3 for equilibration
+N = int(1.5e2) # number of time steps, ~5e3 for equilibration
 # Plot params:
 N_plot = 48 # number of time steps to plot
 N_bins = 32 # number of histogram bins
@@ -41,6 +41,7 @@ print(f'{n_threads=}')
 print(f'{dx=:.2e}')
 print(f'{dt=:.2e}')
 print(f'{Dt=:.2e}')
+print(f'tc/L={Dt*cc/(dx*gs):.2e}')
 print(f'{B_norm=:.2e}')
 print(f'{e_mean=:.2e}')
 if e_mean > 1e1 or e_mean < 1e-1: print(f'WARNING: extreme e_mean')
